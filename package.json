@@ -43,6 +43,7 @@
     "should": "^8.4.0"
   },
   "dependencies": {
+    "@types/node": "^10.0.3",
     "async": "~2.1.4",
     "bluebird": "^3.1.1",
     "debug": "^3.1.0",
