@@ -324,6 +324,60 @@ describe('async observer', function() {
       }
     );
   });
+
+  it('should call after operation hook on error', function(done) {
+    const context = {
+      req: {},
+    };
+    const operationError = new Error('The operation failed without result');
+    let passesBy = 0;
+
+    function fn(context, done) {
+      process.nextTick(() => {
+        done(operationError);
+      });
+    }
+
+    TestModel.observe('after execute', function(ctx, next) {
+      passesBy++;
+      next();
+    });
+
+    TestModel.notifyObserversAround('execute', context, fn, (err, ctx, body) => {
+      passesBy.should.eql(1);
+      err.should.eql(operationError);
+      err.status.should.eql(500); // default status is 500
+      done();
+    });
+  });
+
+  it('should call after operation hook on error while allowing to change err', function(done) {
+    const context = {
+      req: {},
+    };
+    const operationError = new Error('The operation failed without result');
+    let passesBy = 0;
+
+    function fn(context, done) {
+      process.nextTick(() => {
+        done(operationError);
+      });
+    }
+
+    TestModel.observe('after execute', function(ctx, next) {
+      passesBy++;
+      const err = ctx.res.err; // `ctx.res.err` contains operations error
+      err.status = 400;
+      ctx.end(err, ctx, ctx.res.body);
+    });
+
+    TestModel.notifyObserversAround('execute', context, fn, (err, ctx, body) => {
+      passesBy.should.eql(1);
+      err.message.should.eql(operationError.message);
+      err.status.should.eql(400);
+      done();
+    });
+  });
 });
 
 function pushAndNext(array, value) {
