@@ -1254,6 +1254,24 @@ describe('include', function() {
     });
   });
 
+  it('should not throw on fetch User if include is boolean equals true', function(done) {
+    User.find({include: true}, function(err, users) {
+      should.not.exist(err);
+      should.exist(users);
+      users.length.should.be.ok;
+      done();
+    });
+  });
+
+  it('should not throw on fetch User if include is number', function(done) {
+    User.find({include: 1}, function(err, users) {
+      should.not.exist(err);
+      should.exist(users);
+      users.length.should.be.ok;
+      done();
+    });
+  });
+
   // Not implemented correctly, see: loopback-datasource-juggler/issues/166
   // fixed by DB optimization
   it('should support include scope on hasAndBelongsToMany', function(done) {
