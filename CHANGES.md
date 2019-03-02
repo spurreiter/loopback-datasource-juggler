@@ -1,3 +1,13 @@
+2019-02-26, Version 4.6.0
+=========================
+
+ * feat: Support "type" key in sub-properties (Hage Yaapa)
+
+ * fix: use correct callback for geo find queries (biniam)
+
+ * fix: update typescript declarations (biniam)
+
+
 2019-01-29, Version 4.5.3
 =========================
 
