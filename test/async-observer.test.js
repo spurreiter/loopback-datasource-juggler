@@ -338,15 +338,42 @@ describe('async observer', function() {
       });
     }
 
-    TestModel.observe('after execute', function(ctx, next) {
+    TestModel.observe('after execute error', function(ctx, next) {
       passesBy++;
       next();
     });
 
-    TestModel.notifyObserversAround('execute', context, fn, (err, ctx, body) => {
+    TestModel.notifyObserversAround('execute', context, fn, (err, ctx) => {
       passesBy.should.eql(1);
-      err.should.eql(operationError);
-      err.status.should.eql(500); // default status is 500
+      err.message.should.eql(operationError.message);
+      ctx.error.message.should.eql(operationError.message);
+      done();
+    });
+  });
+
+  it('should call after operation hook on error while overwriting error', function(done) {
+    const context = {
+      req: {},
+    };
+    const operationError = new Error('The operation failed without result');
+    const overwriteError = new Error('Overwriting the original error');
+    let passesBy = 0;
+
+    function fn(context, done) {
+      process.nextTick(() => {
+        done(operationError);
+      });
+    }
+
+    TestModel.observe('after execute error', function(ctx, next) {
+      passesBy++;
+      next(overwriteError);
+    });
+
+    TestModel.notifyObserversAround('execute', context, fn, (err, ctx) => {
+      passesBy.should.eql(1);
+      err.message.should.eql(overwriteError.message);
+      ctx.error.message.should.eql(operationError.message);
       done();
     });
   });
@@ -364,17 +391,16 @@ describe('async observer', function() {
       });
     }
 
-    TestModel.observe('after execute', function(ctx, next) {
+    TestModel.observe('after execute error', function(ctx, next) {
       passesBy++;
-      const err = ctx.res.err; // `ctx.res.err` contains operations error
-      err.status = 400;
-      ctx.end(err, ctx, ctx.res.body);
+      const err = ctx.error;
+      ctx.end(err, ctx);
     });
 
-    TestModel.notifyObserversAround('execute', context, fn, (err, ctx, body) => {
+    TestModel.notifyObserversAround('execute', context, fn, (err, ctx) => {
       passesBy.should.eql(1);
       err.message.should.eql(operationError.message);
-      err.status.should.eql(400);
+      ctx.error.message.should.eql(operationError.message);
       done();
     });
   });
