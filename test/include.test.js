@@ -1258,7 +1258,7 @@ describe('include', function() {
     User.find({include: true}, function(err, users) {
       should.not.exist(err);
       should.exist(users);
-      users.length.should.be.ok;
+      users.should.not.be.empty();
       done();
     });
   });
@@ -1267,7 +1267,26 @@ describe('include', function() {
     User.find({include: 1}, function(err, users) {
       should.not.exist(err);
       should.exist(users);
-      users.length.should.be.ok;
+      users.should.not.be.empty();
+      done();
+    });
+  });
+
+  it('should not throw on fetch User if include is symbol', function(done) {
+    User.find({include: Symbol('include')}, function(err, users) {
+      should.not.exist(err);
+      should.exist(users);
+      users.should.not.be.empty();
+      done();
+    });
+  });
+
+  it('should not throw on fetch User if include is function', function(done) {
+    const include = () => {};
+    User.find({include}, function(err, users) {
+      should.not.exist(err);
+      should.exist(users);
+      users.should.not.be.empty();
       done();
     });
   });
